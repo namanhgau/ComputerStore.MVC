@@ -1,0 +1,28 @@
+﻿@{
+    ViewData["Title"] = "Bảng Điều Khiển";
+}
+
+<div class="container mt-4">
+    <h2>Chào mừng đến với Khu vực Quản Trị</h2>
+    <p>Chỉ có Nhân viên và Quản lý mới nhìn thấy trang này!</p>
+
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Quản lý Sản phẩm</h5>
+                    <p class="card-text">Thêm, sửa, xóa máy tính và linh kiện.</p>
+                    <a asp-controller="Products" asp-action="Index" class="btn btn-light text-primary fw-bold">Vào Quản Lý</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Quản lý Đơn hàng</h5>
+                    <p class="card-text">Duyệt đơn và giao hàng cho khách.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
