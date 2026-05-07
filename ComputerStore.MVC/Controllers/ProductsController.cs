@@ -7,6 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace ComputerStore.MVC.Controllers
 {
@@ -14,10 +17,12 @@ namespace ComputerStore.MVC.Controllers
     public class ProductsController : Controller
     {
         private readonly ComputerStoreDbContext _context;
+        private readonly IWebHostEnvironment _env;
 
-        public ProductsController(ComputerStoreDbContext context)
+        public ProductsController(ComputerStoreDbContext context, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
         }
 
         // GET: Products
@@ -56,16 +61,47 @@ namespace ComputerStore.MVC.Controllers
         // POST: Products/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Products/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ProductId,ProductName,Price,StockQuantity,Description,ImageUrl,CategoryId")] Product product)
+        public async Task<IActionResult> Create([Bind("ProductId,ProductName,Price,StockQuantity,Description,ImageUrl,CategoryId")] Product product, IFormFile imageFile)
         {
+            // 1. Xử lý file ảnh ngay khi nhận được từ Form
+            if (imageFile != null && imageFile.Length > 0)
+            {
+                // Kiểm tra và tạo thư mục wwwroot/images nếu chưa tồn tại
+                var imageFolder = Path.Combine(_env.WebRootPath, "images");
+                if (!Directory.Exists(imageFolder))
+                {
+                    Directory.CreateDirectory(imageFolder);
+                }
+
+                // Tạo tên file ngẫu nhiên để tránh bị trùng tên làm ghi đè ảnh cũ
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+                var imagePath = Path.Combine(imageFolder, fileName);
+
+                // Lưu file vào máy chủ
+                using (var stream = new FileStream(imagePath, FileMode.Create))
+                {
+                    await imageFile.CopyToAsync(stream);
+                }
+
+                // Gán đường dẫn ảnh mới vào đối tượng Product
+                product.ImageUrl = "/images/" + fileName;
+
+                // Bỏ qua việc báo lỗi trống ô ImageUrl (vì chúng ta đã tự gán bằng code ở trên rồi)
+                ModelState.Remove("ImageUrl");
+            }
+
+            // 2. Lưu vào Cơ sở dữ liệu
             if (ModelState.IsValid)
             {
                 _context.Add(product);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
+            // Nếu có lỗi nhập liệu, trả về lại form Create
             ViewData["CategoryId"] = new SelectList(_context.Categories, "CategoryId", "CategoryId", product.CategoryId);
             return View(product);
         }

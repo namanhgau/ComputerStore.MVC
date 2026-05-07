@@ -146,10 +146,6 @@ public partial class ComputerStoreDbContext : DbContext
             entity.HasOne(d => d.Product).WithMany(p => p.Reviews)
                 .HasForeignKey(d => d.ProductId)
                 .HasConstraintName("FK__Reviews__Product__5070F446");
-
-            entity.HasOne(d => d.User).WithMany(p => p.Reviews)
-                .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__Reviews__UserId__5165187F");
         });
 
         modelBuilder.Entity<WarrantyTicket>(entity =>
